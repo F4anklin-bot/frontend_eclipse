@@ -1,6 +1,9 @@
+import { useNavigate } from "react-router";
 import { Building2, Menu, ChartLine, Users, ToolCase, Moon } from "lucide-react";
 
 export default function Sidebar({opened, handleOpened, isLight, toggleDarkMode}) {
+  const navigate = useNavigate();
+
   
 
   return (
@@ -28,7 +31,9 @@ export default function Sidebar({opened, handleOpened, isLight, toggleDarkMode})
 
       {/* Exemple d'autres éléments de menu */}
       <div className="flex flex-col gap-2">
-        <button className={`flex cursor-pointer items-center gap-3 p-2 rounded-lg transition-all duration-300 ${
+        <button 
+        onClick={() => navigate("/")}
+        className={`flex cursor-pointer items-center gap-3 p-2 rounded-lg transition-all duration-300 ${
           isLight 
             ? "hover:bg-blue-50 hover:text-blue-600" 
             : "hover:bg-gray-700 hover:text-white"
@@ -37,7 +42,9 @@ export default function Sidebar({opened, handleOpened, isLight, toggleDarkMode})
           {opened && <span className="text-sm font-medium">Dashboard</span>}
         </button>
 
-        <button className={`flex cursor-pointer items-center gap-3 p-2 rounded-lg transition-all duration-300 ${
+        <button 
+        onClick={() => navigate("/Infrastructure")}
+        className={`flex cursor-pointer items-center gap-3 p-2 rounded-lg transition-all duration-300 ${
           isLight 
             ? "hover:bg-blue-50 hover:text-blue-600" 
             : "hover:bg-gray-700 hover:text-white"
@@ -46,7 +53,9 @@ export default function Sidebar({opened, handleOpened, isLight, toggleDarkMode})
           {opened && <span className="text-sm font-medium">Infrastructures</span>}
         </button>
 
-        <button className={`flex cursor-pointer items-center gap-3 p-2 rounded-lg transition-all duration-300 ${
+        <button 
+        onClick={() => navigate("/Equipement")}
+        className={`flex cursor-pointer items-center gap-3 p-2 rounded-lg transition-all duration-300 ${
           isLight 
             ? "hover:bg-blue-50 hover:text-blue-600" 
             : "hover:bg-gray-700 hover:text-white"

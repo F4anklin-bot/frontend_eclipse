@@ -1,7 +1,7 @@
 import { Plus } from 'lucide-react';
 import { useState } from 'react';
 
-export default function Infrastructure({isLight, toggleDarkMode}) {
+export default function Infrastructure({isLight}) {
 
     const [search, setSearch] = useState("");
 
