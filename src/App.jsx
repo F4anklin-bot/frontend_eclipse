@@ -1,48 +1,113 @@
-import { Routes, Route } from "react-router";
+import { Routes, Route, useLocation } from "react-router-dom";
 import Sidebar from "./components/Sidebar";
 import { useState } from "react";
-import Dashboard from "./components/Main/Dashboard";
-import Infrastructure from "./components/Main/Infrastructure";
-import Equipement from "./components/Main/Equipement";
+import ProtectedRoute from "./components/ProtectedRoute.jsx";
+import Dashboard from "./components/adminpages/Dashboard";
+import Infrastructure from "./components/adminpages/Infrastructure";
+import Equipement from "./components/adminpages/Equipement";
+import InfrastructureForm from "./components/adminpages/InfrastructureForm";
+import EquipementForm from "./components/adminpages/EquipementForm";
+import LoginPage from "./components/login/LoginPage";
+import Populations from "./components/adminpages/Populations";
+import CreateAccount from "./components/login/CreateAccount";
+
+// Superviseur pages
+import SupervisorDashboard from "./components/supervisorpages/Dashboard";
+import SupervisorInfrastructure from "./components/supervisorpages/Infrastructure";
+import SupervisorEquipement from "./components/supervisorpages/Equipement";
+import SupervisorInfrastructureForm from "./components/supervisorpages/InfrastructureForm";
+import SupervisorEquipementForm from "./components/supervisorpages/EquipementForm";
 
 function App() {
   const [opened, setOpened] = useState(false);
-  const [isLight, setIsLight] = useState(true);
+  const location = useLocation();
 
   function handleOpened() {
     setOpened(prev => !prev);
   }
-  function toggleDarkMode() {
-    setIsLight(!isLight)
-  }
+
+  const shouldShowSidebar = !["/login", "/create-account"].includes(location.pathname);
 
   return (
-    <div className={`flex transition-colors duration-300
-    ${isLight ?
-      "bg-blue-50" :
-      "bg-gray-900"
-    }
-    `}>
-      <Sidebar opened={opened} handleOpened={handleOpened} isLight={isLight} toggleDarkMode={toggleDarkMode} />
-
+    <div className="flex transition-colors duration-300 bg-blue-50">
+      {shouldShowSidebar && (
+        <Sidebar opened={opened} handleOpened={handleOpened} />
+      )}
       <div className="flex-1 overflow-auto">
         <Routes>
+          <Route element={<ProtectedRoute />}> 
           <Route 
-          path="/"
-          element={<Dashboard opened={opened} />}
+            path="/dashboard"
+            element={<Dashboard opened={opened} />}
           />
-
           <Route
-          path="/Infrastructure"
-          element={<Infrastructure isLight={isLight} toggleDarkMode={toggleDarkMode} />}
+            path="/infrastructure"
+            element={<Infrastructure />}
           />
           <Route 
-          path="/Equipement"
-          element={<Equipement isLight={isLight} />}
+            path="/equipement"
+            element={<Equipement />}
           />
-
+          <Route 
+            path="/equipement/new"
+            element={<EquipementForm />}
+          />
+          <Route 
+            path="/equipement/:id/edit"
+            element={<EquipementForm />}
+          />
+          {/* Superviseur */}
+          <Route 
+            path="/supervisor/dashboard"
+            element={<SupervisorDashboard opened={opened} />}
+          />
+          <Route
+            path="/supervisor/infrastructure"
+            element={<SupervisorInfrastructure />}
+          />
+          <Route 
+            path="/supervisor/equipement"
+            element={<SupervisorEquipement />}
+          />
+          <Route 
+            path="/supervisor/equipement/new"
+            element={<SupervisorEquipementForm />}
+          />
+          <Route 
+            path="/supervisor/equipement/:id/edit"
+            element={<SupervisorEquipementForm />}
+          />
+          <Route
+            path="/supervisor/infrastructure/new"
+            element={<SupervisorInfrastructureForm />}
+          />
+          <Route
+            path="/supervisor/infrastructure/:id/edit"
+            element={<SupervisorInfrastructureForm />}
+          />
+          <Route
+          path="populations"
+          element={<Populations />}
+          />
+          </Route>
+          <Route
+            path="/login"
+            element={<LoginPage />}
+          />
+          <Route
+            path="/create-account"
+            element={<CreateAccount />}
+          />
+          <Route
+            path="/infrastructure/new"
+            element={<InfrastructureForm />}
+          />
+          <Route
+            path="/infrastructure/:id/edit"
+            element={<InfrastructureForm />}
+          />
+          
         </Routes>
-        
       </div>
     </div>
   )
