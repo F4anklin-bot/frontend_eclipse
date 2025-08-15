@@ -1,4 +1,4 @@
-import { Building2, ChartPie, TriangleAlert, Tool } from "lucide-react";
+import { Building2, ChartPie, TriangleAlert, Package } from "lucide-react";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { AuthContext } from "../../context/AuthContext.jsx";
 import { Line, Doughnut, Bar } from "react-chartjs-2";
@@ -25,8 +25,10 @@ export default function Dashboard({ opened }) {
     equipementsLibres: 0,
     recettesMensuelles: 0,
   });
+  const [renderCharts, setRenderCharts] = useState(false);
 
   useEffect(() => {
+    setRenderCharts(true);
     async function fetchAll() {
       if (!token) return;
       try {
@@ -46,7 +48,9 @@ export default function Dashboard({ opened }) {
           equipementsLibres,
           recettesMensuelles,
         });
-      } catch {}
+      } catch (e) {
+        console.error('Failed to load stats', e);
+      }
     }
     fetchAll();
   }, [token]);
@@ -85,9 +89,9 @@ export default function Dashboard({ opened }) {
     }]
   }), [stats]);
 
-  return (
-    <div className="flex flex-col transition-all duration-300 p-4">
-      <h1 className="font-bold text-3xl text-gray-800 mb-1">Tableau de bord</h1>
+    return (
+      <div className="flex flex-col transition-all duration-300 p-4">
+        <h1 className="font-bold text-3xl text-gray-800 mb-1">Tableau de bord</h1>
       <p className="text-sm text-gray-500 mb-6">Vue d'ensemble des infrastructures et équipements</p>
 
       <section className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 justify-center gap-4 ${opened ? 'ml-0' : 'mx-15'}`}>
@@ -95,38 +99,40 @@ export default function Dashboard({ opened }) {
           <span className="absolute text-sm top-3 left-4">Total Infrastructures</span>
           <span className="absolute text-blue-500 text-3xl left-4 top-6 mt-2 font-bold">{stats.totalInfrastructures}</span>
           <span className="absolute top-3 right-4 text-blue-600 bg-blue-100 p-2 rounded-xl"><Building2 /></span>
-        </div>
+          </div>
         <div className="px-4 py-3 rounded-xl bg-white h-[110px] relative flex items-center justify-center shadow">
           <span className="absolute text-sm top-3 left-4">Équipements</span>
           <span className="absolute text-sky-600 text-3xl left-4 top-6 mt-2 font-bold">{stats.totalEquipements}</span>
-          <span className="absolute top-3 right-4 text-sky-600 bg-sky-100 p-2 rounded-xl"><Tool /></span>
-        </div>
+          <span className="absolute top-3 right-4 text-sky-600 bg-sky-100 p-2 rounded-xl"><Package /></span>
+          </div>
         <div className="px-4 py-3 rounded-xl bg-white h-[110px] relative flex items-center justify-center shadow">
           <span className="absolute text-sm top-3 left-4">Occupés</span>
           <span className="absolute text-green-600 text-3xl left-4 top-6 mt-2 font-bold">{stats.equipementsOccupes}</span>
           <span className="absolute top-3 right-4 text-green-600 bg-green-100 p-2 rounded-xl"><ChartPie /></span>
-        </div>
+          </div>
         <div className="px-4 py-3 rounded-xl bg-white h-[110px] relative flex items-center justify-center shadow">
           <span className="absolute text-sm top-3 left-4">Recettes (mois)</span>
           <span className="absolute text-indigo-600 text-xl left-4 top-6 mt-2 font-bold">{stats.recettesMensuelles.toLocaleString()} F</span>
           <span className="absolute top-3 right-4 text-indigo-600 bg-indigo-100 p-2 rounded-xl">FCFA</span>
-        </div>
-      </section>
+          </div>
+        </section>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-6">
-        <div className="bg-white rounded-xl p-4 shadow col-span-1">
-          <h3 className="font-semibold mb-2">Répartition des équipements</h3>
-          <Doughnut data={doughnutData} />
+      {renderCharts && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-6">
+          <div className="bg-white rounded-xl p-4 shadow col-span-1">
+            <h3 className="font-semibold mb-2">Répartition des équipements</h3>
+            <Doughnut data={doughnutData} />
+          </div>
+          <div className="bg-white rounded-xl p-4 shadow col-span-1">
+            <h3 className="font-semibold mb-2">Volumes</h3>
+            <Bar data={barData} />
+          </div>
+          <div className="bg-white rounded-xl p-4 shadow col-span-1">
+            <h3 className="font-semibold mb-2">Recettes (tendance)</h3>
+            <Line data={lineData} />
+          </div>
         </div>
-        <div className="bg-white rounded-xl p-4 shadow col-span-1">
-          <h3 className="font-semibold mb-2">Volumes</h3>
-          <Bar data={barData} />
-        </div>
-        <div className="bg-white rounded-xl p-4 shadow col-span-1">
-          <h3 className="font-semibold mb-2">Recettes (tendance)</h3>
-          <Line data={lineData} />
-        </div>
-      </div>
+      )}
 
       <div className="mt-6 flex gap-3">
         {role === 'ADMIN' ? (
@@ -141,7 +147,7 @@ export default function Dashboard({ opened }) {
           </>
         )}
       </div>
-    </div>
-  );
+      </div>
+    );
 }
   

@@ -8,7 +8,7 @@ import Equipement from "./components/adminpages/Equipement";
 import InfrastructureForm from "./components/adminpages/InfrastructureForm";
 import EquipementForm from "./components/adminpages/EquipementForm";
 import LoginPage from "./components/login/LoginPage";
-import Populations from "./components/adminpages/Populations";
+import Users from "./components/adminpages/Users";
 import CreateAccount from "./components/login/CreateAccount";
 
 // Superviseur pages
@@ -86,8 +86,8 @@ function App() {
             element={<SupervisorInfrastructureForm />}
           />
           <Route
-          path="populations"
-          element={<Populations />}
+          path="users"
+          element={<Users />}
           />
           </Route>
           <Route
