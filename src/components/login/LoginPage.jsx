@@ -24,7 +24,7 @@ export default function LoginPage() {
       });
       if (!res.ok) throw new Error('Identifiants invalides');
       const data = await res.json();
-      login(data.token, data.role);
+      login(data.token, data.role, username);
       if (data.role === 'ADMIN') {
         navigate('/dashboard');
       } else {
@@ -125,6 +125,9 @@ export default function LoginPage() {
               >
                 Se connecter
               </button>
+              <div className="flex justify-between text-sm">
+                <Link className="text-blue-500" to="/forgot-password">Mot de passe oublié ?</Link>
+              </div>
               <p>Vous n'avez pas encore de compte ? <Link className="text-blue-500" to="/create-account">Creer un compte</Link></p>
 
             </form>

@@ -25,12 +25,29 @@ export default function Users() {
 
   async function handleDelete(userId) {
     if (!window.confirm('Supprimer cet utilisateur ?')) return;
-    const res = await fetch(`http://localhost:8080/api/users/${userId}`, {
-      method: 'DELETE',
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    if (res.ok) setUsers(prev => prev.filter(u => u.id !== userId));
-    else alert('Suppression échouée');
+    try {
+      const res = await fetch(`http://localhost:8080/api/users/${userId}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (res.ok) {
+        setUsers(prev => prev.filter(u => u.id !== userId));
+      } else {
+        // Récupérer le message d'erreur du serveur
+        try {
+          const errorData = await res.json();
+          alert(errorData.message || 'Suppression échouée');
+        } catch (jsonError) {
+          // Si la réponse n'est pas au format JSON
+          console.error('Erreur lors du parsing de la réponse:', jsonError);
+          alert(`Suppression échouée: ${res.status === 403 ? 'Vous n\'avez pas les droits nécessaires' : 'Erreur serveur'}`);
+        }
+      }
+    } catch (error) {
+      console.error('Erreur lors de la suppression:', error);
+      alert('Erreur réseau lors de la suppression. Veuillez réessayer.');
+    }
   }
 
   async function updateRole(userId, newRole) {

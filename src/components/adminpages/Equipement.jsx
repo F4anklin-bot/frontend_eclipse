@@ -1,27 +1,4 @@
-// import { useState } from "react"
-
-// export default function Equipement(){
-
-
-// //   Gestion des équipements
-// // 	Enregistrement des équipements par infrastructure
-// // 	Description (numérotation, dimension, état, localisation, adresse, Géolocalisation, valeur locative, Type de service)
-// // 	Ajout de documents/photos
-//     const [equipement, setEquipement] = useState({
-//         id:1,
-//         dimension:'400m',
-//         etat: 'fonctionnel',
-//         adresse: 'lome',
-//         geolocalisation:'',
-//         valeur:'',
-//         type_service:'',
-//     })
-
-//     return(
-//         <div className="flex-1 flex flex-col text-black">
-//         </div>
-//     )
-// }
+// Ce code a été remplacé par l'implémentation ci-dessous
 
 import { Plus, Package, Edit3, Trash2, Filter, Search, Eye } from 'lucide-react';
 import { useEffect, useContext, useState } from 'react';
@@ -31,63 +8,7 @@ import { AuthContext } from '../../context/AuthContext.jsx';
 export default function Equipements() {
     const navigate = useNavigate();
     const { token, role } = useContext(AuthContext);
-    const [equipements, setEquipements] = useState([
-        {
-            id: 1,
-            nom: "Stand A12",
-            description: "15m² - Poissonnerie",
-            infrastructure: "Marché Central",
-            type: "Étal",
-            statut: "Occupé",
-            occupant: "Dupont Marine",
-            redevance: 12450,
-            icon: Package
-        },
-        {
-            id: 2,
-            nom: "Box B05",
-            description: "20m² - Boucherie",
-            infrastructure: "Marché Central",
-            type: "Box commercial",
-            statut: "Occupé",
-            occupant: "Boucherie Moderne",
-            redevance: 26800,
-            icon: Package
-        },
-        {
-            id: 3,
-            nom: "Quai Q3",
-            description: "100m² - Marchandises",
-            infrastructure: "Gare Routière Nord",
-            type: "Quai",
-            statut: "Libre",
-            occupant: null,
-            redevance: 12000,
-            icon: Package
-        },
-        {
-            id: 4,
-            nom: "Stand C08",
-            description: "12m² - Légumes",
-            infrastructure: "Marché Central",
-            type: "Étal",
-            statut: "Maintenance",
-            occupant: null,
-            redevance: 13800,
-            icon: Package
-        },
-        {
-            id: 5,
-            nom: "Dock D1",
-            description: "200m² - Container",
-            infrastructure: "Port de Commerce",
-            type: "Dock",
-            statut: "Occupé",
-            occupant: "Maritime Express",
-            redevance: 25000,
-            icon: Package
-        }
-    ]);
+    const [equipements, setEquipements] = useState([]);
 
     const [search, setSearch] = useState("");
     const [infrastructureFilter, setInfrastructureFilter] = useState("Toutes");
@@ -97,7 +18,10 @@ export default function Equipements() {
     const [editingEquipement, setEditingEquipement] = useState(null);
     const [users, setUsers] = useState([]);
 
-    const infrastructures = ["Toutes", "Marché Central", "Gare Routière Nord", "Port de Commerce"];
+    const infrastructures = [
+        "Toutes",
+        ...Array.from(new Set((equipements || []).map(eq => (typeof eq.infrastructure === 'string' ? eq.infrastructure : (eq.infrastructure?.nom || ''))).filter(Boolean)))
+    ];
     const types = ["Tous types", "Étal", "Box commercial", "Quai", "Dock"];
     const statuts = ["Tous statuts", "Occupé", "Libre", "Maintenance"];
 
@@ -113,16 +37,34 @@ export default function Equipements() {
         navigate(`/equipement/${equipement.id}/edit`);
     }
 
-    function handleDelete(id) {
-        if (window.confirm("Êtes-vous sûr de vouloir supprimer cet équipement ?")) {
-            setEquipements(prev => prev.filter(eq => eq.id !== id));
+    async function handleDelete(id) {
+        if (!window.confirm("Êtes-vous sûr de vouloir supprimer cet équipement ?")) return;
+        try {
+            const res = await fetch(`http://localhost:8080/api/equipements/${id}`, {
+                method: 'DELETE',
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (res.ok) {
+                setEquipements(prev => prev.filter(eq => eq.id !== id));
+                // Notification de succès
+                alert('Équipement supprimé avec succès');
+            } else {
+                console.error('Erreur lors de la suppression:', res.status);
+                alert(`Suppression échouée: ${res.status === 403 ? 'Vous n\'avez pas les droits nécessaires' : 'Erreur serveur'}`);
+            }
+        } catch (e) {
+            console.error('Erreur réseau lors de la suppression:', e);
+            alert('Erreur réseau lors de la suppression. Veuillez réessayer.');
         }
     }
 
     async function handleDeleteUserByUsername(username) {
         if (!username) return;
         const user = users.find(u => u.username === username);
-        if (!user) return;
+        if (!user) {
+            alert('Utilisateur non trouvé');
+            return;
+        }
         if (!window.confirm(`Supprimer l'utilisateur ${user.username} ?`)) return;
         try {
             const res = await fetch(`http://localhost:8080/api/users/${user.id}`, {
@@ -131,21 +73,62 @@ export default function Equipements() {
             });
             if (res.ok) {
                 setUsers(prev => prev.filter(u => u.id !== user.id));
+                // Mettre à jour les équipements associés à cet utilisateur
+                setEquipements(prev => prev.map(eq => {
+                    if (eq.occupant === user.username) {
+                        return { ...eq, occupant: null, statut: 'Libre' };
+                    }
+                    return eq;
+                }));
+                alert('Utilisateur supprimé avec succès');
             } else {
-                alert('Suppression utilisateur échouée');
+                console.error('Erreur lors de la suppression utilisateur:', res.status);
+                alert(`Suppression utilisateur échouée: ${res.status === 403 ? 'Vous n\'avez pas les droits nécessaires' : 'Erreur serveur'}`);
             }
         } catch (e) {
-            alert('Erreur réseau lors de la suppression utilisateur');
+            console.error('Erreur réseau lors de la suppression utilisateur:', e);
+            alert('Erreur réseau lors de la suppression utilisateur. Veuillez réessayer.');
         }
     }
 
     function handleViewUserByUsername(username) {
         const user = users.find(u => u.username === username);
-        if (!user) return;
-        alert(`Utilisateur\n- Nom: ${user.username}\n- Rôle: ${user.role}`);
+        if (!user) {
+            alert('Utilisateur non trouvé');
+            return;
+        }
+        
+        // Compter les équipements associés à cet utilisateur
+        const userEquipements = equipements.filter(eq => eq.occupant === username);
+        
+        alert(
+            `Informations utilisateur\n` +
+            `- Nom d'utilisateur: ${user.username}\n` +
+            `- Rôle: ${user.role}\n` +
+            `- Nombre d'équipements: ${userEquipements.length}\n` +
+            `- Redevance totale: ${userEquipements.reduce((sum, eq) => sum + Number(eq.redevance || 0), 0).toLocaleString()}F/mois`
+        );
     }
 
     useEffect(() => {
+        async function load() {
+            if (!token) return;
+            try {
+                const res = await fetch('http://localhost:8080/api/equipements', {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    setEquipements(data);
+                } else {
+                    console.error('Erreur lors du chargement des équipements:', res.status);
+                }
+            } catch (e) {
+                console.error('Erreur réseau lors du chargement des équipements:', e);
+            }
+        }
+        load();
+        
         // Charger les utilisateurs pour l'ADMIN uniquement
         async function fetchUsers() {
             if (!token || role !== 'ADMIN') return;
@@ -156,24 +139,36 @@ export default function Equipements() {
                 if (res.ok) {
                     const data = await res.json();
                     setUsers(data);
+                } else {
+                    console.error('Erreur lors du chargement des utilisateurs:', res.status);
                 }
             } catch (e) {
-                // noop
+                console.error('Erreur réseau lors du chargement des utilisateurs:', e);
             }
         }
         fetchUsers();
     }, [token, role]);
 
     const filteredEquipements = equipements.filter(eq => {
-        const matchesSearch = eq.nom.toLowerCase().includes(search.toLowerCase()) ||
-                            eq.description.toLowerCase().includes(search.toLowerCase()) ||
-                            (eq.occupant && eq.occupant.toLowerCase().includes(search.toLowerCase()));
-        const matchesInfrastructure = infrastructureFilter === "Toutes" || eq.infrastructure === infrastructureFilter;
+        const nom = (eq.nom || '').toLowerCase();
+        const desc = (eq.description || '').toLowerCase();
+        const occ = (eq.occupant || '').toLowerCase();
+        const matchesSearch = nom.includes(search.toLowerCase()) ||
+                              desc.includes(search.toLowerCase()) ||
+                              occ.includes(search.toLowerCase());
+        const eqInfraName = typeof eq.infrastructure === 'string' ? eq.infrastructure : (eq.infrastructure?.nom || '');
+        const matchesInfrastructure = infrastructureFilter === "Toutes" || eqInfraName === infrastructureFilter;
         const matchesType = typeFilter === "Tous types" || eq.type === typeFilter;
         const matchesStatut = statutFilter === "Tous statuts" || eq.statut === statutFilter;
-        
         return matchesSearch && matchesInfrastructure && matchesType && matchesStatut;
     });
+
+    const statsDynamic = {
+        total: filteredEquipements.length,
+        occupes: filteredEquipements.filter(eq => eq.statut === 'Occupé').length,
+        libres: filteredEquipements.filter(eq => eq.statut === 'Libre').length,
+        recettes: filteredEquipements.filter(eq => eq.statut === 'Occupé').reduce((sum, eq) => sum + Number(eq.redevance || 0), 0),
+    };
 
     const getStatutColor = (statut) => {
         switch(statut) {
@@ -278,25 +273,25 @@ export default function Equipements() {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                 <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
                     <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                        {equipements.length}
+                        {statsDynamic.total}
                     </div>
                     <div className="text-sm text-gray-600 dark:text-gray-400">Total équipements</div>
                 </div>
                 <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
                     <div className="text-2xl font-bold text-green-600">
-                        {equipements.filter(eq => eq.statut === "Occupé").length}
+                        {statsDynamic.occupes}
                     </div>
                     <div className="text-sm text-gray-600 dark:text-gray-400">Occupés</div>
                 </div>
                 <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
                     <div className="text-2xl font-bold text-blue-600">
-                        {equipements.filter(eq => eq.statut === "Libre").length}
+                        {statsDynamic.libres}
                     </div>
                     <div className="text-sm text-gray-600 dark:text-gray-400">Libres</div>
                 </div>
                 <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
                     <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                        {equipements.filter(eq => eq.statut === "Occupé").reduce((sum, eq) => sum + eq.redevance, 0).toLocaleString()}F
+                        {statsDynamic.recettes.toLocaleString()}F
                     </div>
                     <div className="text-sm text-gray-600 dark:text-gray-400">Recettes/mois</div>
                 </div>
@@ -352,7 +347,7 @@ export default function Equipements() {
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                                            {equipement.infrastructure}
+                                            {typeof equipement.infrastructure === 'string' ? equipement.infrastructure : (equipement.infrastructure?.nom || '-')}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                                             {equipement.type}
@@ -386,7 +381,7 @@ export default function Equipements() {
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                                            {equipement.redevance.toLocaleString()}F/mois
+                                            {Number(equipement.redevance || 0).toLocaleString()}F/mois
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                             <button 

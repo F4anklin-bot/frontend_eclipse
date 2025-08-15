@@ -17,6 +17,7 @@ export default function CreateAccount() {
         { value: 'SUPERVISOR', name: 'Supervisor' }
     ]);
     const [selectedRole, setSelectedRole] = useState(roles[0].value);
+    const [email, setEmail] = useState('');
 
     async function handleRegister() {
       if (!username || !password || !confirmPassword) {
@@ -31,12 +32,12 @@ export default function CreateAccount() {
         const res = await fetch('http://localhost:8080/api/auth/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username, password, role: selectedRole })
+          body: JSON.stringify({ username, password, role: selectedRole, email: email || undefined })
         });
         if (!res.ok) throw new Error('Inscription échouée');
         const data = await res.json();
         // On connaît déjà le rôle choisi
-        login(data.token, selectedRole);
+        login(data.token, selectedRole, username);
         if (selectedRole === 'ADMIN') {
           navigate('/dashboard');
         } else {
@@ -91,6 +92,8 @@ export default function CreateAccount() {
                         <option key={item.value} value={item.value}>{item.name}</option>
                     ))}
                 </select>
+                <label htmlFor="email">Email (optionnel, requis pour récupérer le mot de passe)</label>
+                <input type="email" id="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full p-3 border border-gray-300 rounded-md" placeholder="ex: utilisateur@exemple.com" />
                 <p>Vous avez deja un compte ? <Link className='text-blue-500' to='/login'>Se connecter</Link></p>
 
                 <button

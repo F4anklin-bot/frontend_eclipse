@@ -4,63 +4,7 @@ import { useNavigate } from 'react-router-dom';
 
 export default function Equipements() {
     const navigate = useNavigate();
-    const [equipements] = useState([
-        {
-            id: 1,
-            nom: "Stand A12",
-            description: "15m² - Poissonnerie",
-            infrastructure: "Marché Central",
-            type: "Étal",
-            statut: "Occupé",
-            occupant: "Dupont Marine",
-            redevance: 12450,
-            icon: Package
-        },
-        {
-            id: 2,
-            nom: "Box B05",
-            description: "20m² - Boucherie",
-            infrastructure: "Marché Central",
-            type: "Box commercial",
-            statut: "Occupé",
-            occupant: "Boucherie Moderne",
-            redevance: 26800,
-            icon: Package
-        },
-        {
-            id: 3,
-            nom: "Quai Q3",
-            description: "100m² - Marchandises",
-            infrastructure: "Gare Routière Nord",
-            type: "Quai",
-            statut: "Libre",
-            occupant: null,
-            redevance: 12000,
-            icon: Package
-        },
-        {
-            id: 4,
-            nom: "Stand C08",
-            description: "12m² - Légumes",
-            infrastructure: "Marché Central",
-            type: "Étal",
-            statut: "Maintenance",
-            occupant: null,
-            redevance: 13800,
-            icon: Package
-        },
-        {
-            id: 5,
-            nom: "Dock D1",
-            description: "200m² - Container",
-            infrastructure: "Port de Commerce",
-            type: "Dock",
-            statut: "Occupé",
-            occupant: "Maritime Express",
-            redevance: 25000,
-            icon: Package
-        }
-    ]);
+    const [equipements] = useState([]);
 
     const [search, setSearch] = useState("");
     const [infrastructureFilter, setInfrastructureFilter] = useState("Toutes");
